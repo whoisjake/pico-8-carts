@@ -2,52 +2,114 @@ pico-8 cartridge // http://www.pico-8.com
 version 7
 __lua__
 // car
-car_x = 50
-car_v = 1
-car_y = 110
+car = {}
+car.x = 57
+car.y = 110
+car.v = 1
+car.s = 1
 
 // lines
-offset = 0
+lines = {}
+lines.offset = 0
+lines.x = 60
+lines.s = 2
 
 // timing
 tick = 0
 
-// sprites 
-car_s = 1
-line_s = 2
-cone_s = 3
-const_s = 4
-oil_s = 5
+// baddies
+baddies = {}
+
+// scenery
+scenery = {}
+
+// sprites
 r_turn_s = 6
 l_turn_s = 7
-flag_s = 9
-cactus_s = 10
 
 function _init()
+ for i=0,2 do
+ 	baddie = {}
+ 	baddie.x = flr(rnd(40) + 40)
+ 	baddie.y = 60 - i*100
+ 	baddie.s = random_baddie()
+ 	add(baddies,baddie)
+ end
+ 
+ for i=0,2 do
+ 	thing = {}
+ 	thing.x = flr(rnd(40))
+ 	thing.y = 60 - i*100
+ 	thing.s = random_thing()
+ 	add(scenery,thing)
+ end
+end
+
+function shift_road()
+ if(car.v == 3) then lines.offset += 1 end
+ if(car.v == 2 and tick < 2) then lines.offset += 1 end
+ if(car.v == 1 and tick == 0) then lines.offset += 1 end
+
+ if(lines.offset > 3) then lines.offset = 0 end
+end
+
+function random_baddie()
+	return flr(rnd(3) + 3)
+end
+
+function shift_baddies()
+	for baddie in all(baddies) do
+		baddie.y += car.v
+		if (baddie.y > 127) then 
+			baddie.s = random_baddie()
+			baddie.y = -100
+			baddie.x = flr(rnd(40) + 40)
+		end
+	end
+end
+
+function random_thing()
+	if (rnd(100) > 50) then
+		return 8
+	else
+		return 9
+	end
+end
+
+function shift_scenery()
+	for thing in all(scenery) do
+		thing.y += car.v
+		if (thing.y > 127) then 
+			thing.s = random_thing
+			thing.y = -100
+			thing.x = flr(rnd(40))
+		end
+	end
+end
+
+function shift_car()
+	if(btn(0)) then car.x -= 1 end
+ if(btn(1)) then car.x += 1 end
+ if(btnp(2)) then car.v += 1 end
+ if(btnp(3)) then car.v -= 1 end
+
+ if(car.v < 1)  then car.v = 1  end
+ if(car.v > 3)  then car.v = 3  end
+
+ if(car.x > 73) then car.v = 1 end
+ if(car.x < 40) then car.v = 1 end
+ if(car.x > 78) then car.x = 78 end
+ if(car.x < 35) then car.x = 35 end
 end
 
 function _update()
  tick += 1
  if(tick > 2) then tick = 0 end
 
- if(car_v == 3) then offset += 1 end
- if(car_v == 2 and tick < 2) then offset += 1 end
- if(car_v == 1 and tick == 0) then offset += 1 end
-
- if(offset > 3) then offset = 0 end
-
- if(btn(0)) then car_x -= 1 end
- if(btn(1)) then car_x += 1 end
- if(btnp(2)) then car_v += 1 end
- if(btnp(3)) then car_v -= 1 end
-
- if(car_v < 1)  then car_v = 1  end
- if(car_v > 3)  then car_v = 3  end
-
- if(car_x > 73) then car_v = 1 end
- if(car_x < 40) then car_v = 1 end
- if(car_x > 78) then car_x = 78 end
- if(car_x < 35) then car_x = 35 end
+	shift_road()
+	shift_car()
+	shift_scenery()
+	shift_baddies()
 end
 
 function draw_sky()
@@ -62,31 +124,37 @@ function draw_road()
  rectfill(40,60,80,127,5)
  rectfill(40,60,41,127,7)
  rectfill(79,60,80,127,7)
- 
+
  for i=0,11 do
-  l_x = 60 + (i*8) + offset
-  spr(line_s,60,l_x)
+  line_y = 60 + (i*8) + lines.offset
+  spr(lines.s,lines.x,line_y)
  end
 end
 
 function draw_scenery()
+	for thing in all(scenery) do
+	 if (thing.y >= 60) then spr(thing.s,thing.x,thing.y) end
+	end
 end
 
 function draw_baddies()
+	for baddie in all(baddies) do
+		if (baddie.y >= 60) then spr(baddie.s,baddie.x,baddie.y) end
+	end
 end
 
 function draw_car()
- spr(car_s,car_x,car_y)
+ spr(car.s,car.x,car.y)
 
- print("car: ("..car_x..","..car_y..")")
- print("velocity: "..car_v)
+ print("car: ("..car.x..","..car.y..")")
+ print("velocity: "..car.v)
  print("tick: "..tick)
 end
 
 function _draw()
  cls()
- palt(2,true)
- palt(0,false)
+ palt(2,true)  // purple should be transparent
+ palt(0,false) // we like black, draw black
  draw_sky()
  draw_ground()
  draw_scenery()
