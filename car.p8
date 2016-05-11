@@ -10,6 +10,7 @@ car.s = 1
 car.width = 5
 car.height = 4
 car.health = 5
+car.colliding = false
 car.burning = false
 
 // lines
@@ -120,11 +121,18 @@ function move_car()
 	end
 	
 	// collisions
+	previously_colliding = car.colliding
+	car.colliding = false
 	for baddie in all(baddies) do
 		if (car_collision(baddie)) then
-			car.health -= 1
 			car.v = 1
+			car.colliding = true
 		end
+	end
+	
+	if (previously_colliding and car.colliding != true) then
+		car.health -= 1
+		car.burning = true
 	end
 
 	// limit x
@@ -191,10 +199,10 @@ end
 
 function draw_car()
  spr(car.s,car.x,car.y)
- print("car: ("..car.x..","..car.y..")")
- print("velocity: "..car.v)
- print("tick: "..tick)
- print("health: "..car.health)
+ // print("car: ("..car.x..","..car.y..")")
+ // print("velocity: "..car.v)
+ // print("tick: "..tick)
+ // print("health: "..car.health)
 end
 
 function _draw()
