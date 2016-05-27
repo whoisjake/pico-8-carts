@@ -44,7 +44,7 @@ function _init()
  	add(baddies,baddie)
  end
  
- for i=0,2 do
+ for i=0,5 do
  	thing = {}
  	thing.x = flr(rnd(40))
  	thing.y = 60 - i*100
@@ -73,7 +73,7 @@ function move_baddies()
 		baddie.y += car.v
 		if (baddie.y > 127) then 
 			baddie.s = random_baddie()
-			baddie.y = -100
+			baddie.y = 0
 			baddie.x = flr(rnd(40) + 40)
 		end
 	end
@@ -90,7 +90,11 @@ function move_scenery()
 		if (thing.y > 127) then 
 			thing.s = random_thing()
 			thing.y = -100
-			thing.x = flr(rnd(40))
+			if (rnd(100) > 50) then
+				thing.x = flr(rnd(40))
+			else
+				thing.x = 80 + flr(rnd(40))
+			end
 		end
 	end
 end
@@ -224,7 +228,7 @@ function draw_intro()
 	spr(17,56,28)
 	spr(18,64,28)
 	spr(19,72,28)
-	print("by jcb.gd",44,40)
+	print("by whoisjake",38,40)
 	print("[press any key]",32,50)
 end
 
